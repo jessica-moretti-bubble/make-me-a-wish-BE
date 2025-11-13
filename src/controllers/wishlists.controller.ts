@@ -191,6 +191,7 @@ export const updateWishlist = async (c: Context) => {
   const { name, iconName } = await c.req.json();
 
   const userId = getUserIdFromContext(c);
+
   if (!userId) return c.json({ error: "Token non valido o mancante" }, 401);
 
   const profile = await getUserProfile(userId);
@@ -217,4 +218,63 @@ export const updateWishlist = async (c: Context) => {
   );
 
   return c.json(200);
+};
+
+export const updateGift = async (c: Context) => {
+  const {
+    title,
+    description,
+    imageKey,
+    isReceived,
+    location,
+    locationUrl,
+    price,
+  } = await c.req.json();
+
+  const userId = getUserIdFromContext(c);
+
+  if (!userId) return c.json({ error: "Token non valido o mancante" }, 401);
+
+  const profile = await getUserProfile(userId);
+  if (!profile) return c.json({ error: "Utente non trovato" }, 404);
+
+  const categoryId = c.req.param("categoryId");
+
+  if (!categoryId)
+    return c.json({ error: "Parametro categoryId mancante" }, 400);
+
+  const wishlist = await getUserWishlist(categoryId, userId);
+  if (!wishlist)
+    return c.json(
+      { error: "Wishlist non trovata o non appartenente all'utente" },
+      404
+    );
+
+  const giftId = c.req.param("giftId");
+
+  if (!giftId) return c.json({ error: "Parametro giftId mancante" }, 400);
+
+  const gift = await UserGift.findOne({ _id: giftId, categoryId });
+
+  if (!gift)
+    return c.json(
+      { error: "Gift non trovato o non appartenente alla categoria" },
+      404
+    );
+
+  const updatedGift = await UserGift.findByIdAndUpdate(
+    giftId,
+    {
+      title,
+      description,
+      imageKey,
+      isReceived,
+      location,
+      locationUrl,
+      price,
+    },
+    { new: true }
+  );
+
+  return c.json({ updatedGift }, 200);
 };

@@ -9,6 +9,7 @@ import {
   deleteWishlist,
   getGifts,
   getWishlists,
+  updateGift,
   updateWishlist,
 } from "../controllers/wishlists.controller.js";
 import { GiftOpenapiSchema } from "../schemas/gifts/gifts.openapi.schema.js";
@@ -94,7 +95,32 @@ const updateWishlistRoute = createRoute({
   security: [{ bearerAuth: [] }],
 });
 
-export const getGiftsRoute = createRoute({
+const updateGiftRoute = createRoute({
+  method: "patch",
+  path: "/wishlists/{categoryId}/gifts/{giftId}",
+  description: "Modifica un regalo",
+  request: {
+    params: z.object({ categoryId: z.string(), giftId: z.string() }),
+    body: {
+      content: {
+        "application/json": {
+          schema: GiftOpenapiSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    204: {
+      description: "Gift modificato con successo",
+    },
+    401: { description: "Token non valido o mancante" },
+    404: { description: "Wishlist non trovata" },
+  },
+
+  security: [{ bearerAuth: [] }],
+});
+
+const getGiftsRoute = createRoute({
   method: "get",
   path: "/wishlists/gifts",
   request: {
@@ -180,4 +206,5 @@ export const registerWishlistRoutes = (app: any) => {
   app.openapi(addGiftRoute, addGift);
   app.openapi(getGiftsRoute, getGifts);
   app.openapi(updateWishlistRoute, updateWishlist);
+  app.openapi(updateGiftRoute, updateGift);
 };
