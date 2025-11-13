@@ -13,6 +13,7 @@ export const WishlistsOpenapiSchema = z.object({
     example: "fsdfsdfsdf",
     description: "Wishlist id",
   }),
+
   gifts: z
     .array(
       z.string().openapi({

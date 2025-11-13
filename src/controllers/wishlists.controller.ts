@@ -31,22 +31,23 @@ export const deleteWishlist = async (c: Context) => {
   if (!wishlistId) return c.json({ error: "Parametro ID mancante" }, 400);
 
   const userId = getUserIdFromContext(c);
-
   if (!userId) return c.json({ error: "Token non valido o mancante" }, 401);
 
   const profile = await getUserProfile(userId);
-
   if (!profile) return c.json({ error: "Utente non trovato" }, 404);
 
   const wishlist = await getUserWishlist(wishlistId, userId);
-
   if (!wishlist)
     return c.json(
       { error: "Wishlist non trovata o non appartenente all'utente" },
       404
     );
 
+  await UserGift.deleteMany({ categoryId: wishlistId });
+
   await UserWishlist.findByIdAndDelete(wishlistId);
+
+  await UserProfile.updateOne({ userId }, { $pull: { wishlists: wishlistId } });
 
   return c.body(null, 204);
 };
@@ -60,11 +61,9 @@ export const deleteWish = async (c: Context) => {
     return c.json({ error: "Parametri mancanti" }, 400);
 
   const userId = getUserIdFromContext(c);
-
   if (!userId) return c.json({ error: "Token non valido o mancante" }, 401);
 
   const profile = await getUserProfile(userId);
-
   if (!profile) return c.json({ error: "Utente non trovato" }, 404);
 
   const wishlist = await getUserWishlist(categoryId, userId);
@@ -84,6 +83,11 @@ export const deleteWish = async (c: Context) => {
       { error: "Gift non trovato o non appartenente alla categoria" },
       404
     );
+
+  await UserWishlist.updateOne(
+    { _id: categoryId },
+    { $pull: { gifts: wishId } }
+  );
 
   return c.body(null, 204);
 };
@@ -181,4 +185,36 @@ export const addGift = async (c: Context) => {
   );
 
   return c.json({ newGift }, 201);
+};
+
+export const updateWishlist = async (c: Context) => {
+  const { name, iconName } = await c.req.json();
+
+  const userId = getUserIdFromContext(c);
+  if (!userId) return c.json({ error: "Token non valido o mancante" }, 401);
+
+  const profile = await getUserProfile(userId);
+  if (!profile) return c.json({ error: "Utente non trovato" }, 404);
+
+  const wishlistId = c.req.param("categoryId");
+
+  if (!wishlistId)
+    return c.json({ error: "Parametro categoryId mancante" }, 400);
+
+  const wishlist = await getUserWishlist(wishlistId, userId);
+
+  if (!wishlist) {
+    return c.json(
+      { error: "Wishlist non trovata o non appartenente all'utente" },
+      404
+    );
+  }
+
+  await UserWishlist.findByIdAndUpdate(
+    wishlistId,
+    { name, iconName },
+    { new: true }
+  );
+
+  return c.json(200);
 };

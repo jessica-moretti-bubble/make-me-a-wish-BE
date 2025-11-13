@@ -1,6 +1,7 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { jwtAuth } from "../middleware/auth.js";
 import { WishlistsOpenapiSchema } from "../schemas/wishlists/wishlists.openapi.schema.js";
+import { WishlistPayloadSchema } from "../schemas/wishlists/wishlists.payload.schema.js";
 import {
   addGift,
   addWishlist,
@@ -8,6 +9,7 @@ import {
   deleteWishlist,
   getGifts,
   getWishlists,
+  updateWishlist,
 } from "../controllers/wishlists.controller.js";
 import { GiftOpenapiSchema } from "../schemas/gifts/gifts.openapi.schema.js";
 
@@ -67,6 +69,31 @@ const deleteWishRoute = createRoute({
   security: [{ bearerAuth: [] }],
 });
 
+const updateWishlistRoute = createRoute({
+  method: "patch",
+  path: "/wishlists/{categoryId}",
+  description: "Modifica una wishlist",
+  request: {
+    params: z.object({ categoryId: z.string() }),
+    body: {
+      content: {
+        "application/json": {
+          schema: WishlistPayloadSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    204: {
+      description: "Wishlist modificata con successo",
+    },
+    401: { description: "Token non valido o mancante" },
+    404: { description: "Wishlist non trovata" },
+  },
+
+  security: [{ bearerAuth: [] }],
+});
+
 export const getGiftsRoute = createRoute({
   method: "get",
   path: "/wishlists/gifts",
@@ -100,7 +127,7 @@ const addWishlistRoute = createRoute({
     body: {
       content: {
         "application/json": {
-          schema: WishlistsOpenapiSchema,
+          schema: WishlistPayloadSchema,
         },
       },
     },
@@ -145,10 +172,12 @@ export const registerWishlistRoutes = (app: any) => {
   app.use("/wishlists/gifts", jwtAuth);
   app.use("/wishlists/:id", jwtAuth);
   app.use("/wishlists/:categoryId/gifts/:wishId", jwtAuth);
+  app.use("/wishlists/:categoryId", jwtAuth);
   app.openapi(deleteWishRoute, deleteWish);
   app.openapi(getWishlistsRoute, getWishlists);
   app.openapi(addWishlistRoute, addWishlist);
   app.openapi(deleteWishlistRoute, deleteWishlist);
   app.openapi(addGiftRoute, addGift);
   app.openapi(getGiftsRoute, getGifts);
+  app.openapi(updateWishlistRoute, updateWishlist);
 };
