@@ -21,10 +21,15 @@ export const GiftOpenapiSchema = z.object({
     example: false,
     description: "True se il regalo è stato ricevuto",
   }),
-  location: z.string().optional().openapi({
-    example: "Milano",
-    description: "Luogo dove si trova o può essere acquistato",
-  }),
+  location: z
+    .object({
+      lat: z.string(),
+      lng: z.string(),
+    })
+    .optional()
+    .openapi({
+      description: "Coordinate ",
+    }),
   locationUrl: z.string().optional().openapi({
     example: "https://apple.com/it",
     description: "Link al negozio o posizione",

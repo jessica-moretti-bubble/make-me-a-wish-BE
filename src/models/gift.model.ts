@@ -6,7 +6,10 @@ export interface Gift {
   categoryId?: mongoose.Types.ObjectId;
   imageKey?: string;
   isReceived?: boolean;
-  location?: string;
+  location?: {
+    lat: string;
+    lng: string;
+  };
   locationUrl?: string;
   price?: number;
 }

@@ -8,7 +8,10 @@ const GiftSchema = new Schema<Gift>(
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: "Wishlist" },
     imageKey: { type: String },
     isReceived: { type: Boolean, default: false },
-    location: { type: String },
+    location: {
+      lat: { type: String, required: false },
+      lng: { type: String, required: false },
+    },
     locationUrl: { type: String },
     price: { type: Number, min: 0 },
   },
